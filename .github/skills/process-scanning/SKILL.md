@@ -91,6 +91,21 @@ Items may carry a printed label (from `print-labels`) instead of a handwritten p
 | `Pur` | `Purchase price` |
 | `Stock` | `Opening stock quantity` |
 
+The label layout is always the same:
+
+```
+Details ______________________
+MRP   ________   Sale  ________
+Whsl  ________   Qty   ________
+Pur   ________   Stock ________
+```
+
+Label printing is sometimes faulty: field names can be faded, cut off, partly missing (for example `RP` instead of `MRP`), misaligned, or crossed by stray lines. In that case:
+
+- **Infer the field from its position** in the layout above, even if its name is unreadable or missing. Example: the top-left value of the second row is MRP.
+- **Never infer a value.** Read the handwritten value exactly as written. If the value itself is unreadable or ambiguous, send the image to review as usual.
+- Ignore printing defects such as stray lines or smudges; they are not part of a value.
+
 Always leave out: discount percentages on MRP, tax rate, inclusive of tax, units, minimum stock, and item location.
 
 ### Rupees and paise
