@@ -48,7 +48,7 @@ The PDF is one page: one row of 2 labels. For more labels, set the number of cop
 
 `resources\Import Items Template.xlsx` is the Vyapaar import template; its headers must not change. The script fills these `Item Details` columns when available: `Item name*`, `Item code`, `Category`, `HSN`, `Default MRP`, `Sale price`, `Purchase price`, `Wholesale price`, `Minimum wholesale quantity`, `Discount Type`, `Sale Discount`, and `Opening stock quantity`. Tax, unit, and MRP discount percentage columns are left blank.
 
-Items without a barcode get an internal EAN-13 code starting with `200`, numbered after the highest such code in existing output files. These codes are for this shop only and are not registered GS1 barcodes.
+Items without a barcode get an internal 10-digit code starting with `9` (for example `9000000001`), numbered after the highest such code in existing output files. These codes are for this shop only and are not registered GS1 barcodes. Codes starting with `2` are avoided because billing software reads them as weighing-scale barcodes and turns part of the code into a weight or price.
 
 ## Test case
 
