@@ -62,7 +62,7 @@ def last_internal_number():
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
-    rows = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    rows = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8-sig"))
 
     workbook = load_template()
     sheet = workbook["Item Details"]

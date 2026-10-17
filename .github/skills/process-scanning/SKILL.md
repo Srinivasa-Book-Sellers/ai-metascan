@@ -69,7 +69,7 @@ Prices and quantities are numbers. `Item code` is a string.
 | `Item code` | Barcode digits printed on the item, as text with leading zeros. Leave out if there is no barcode; the script generates one. |
 | `Category` | Only if clearly one of the template's categories; otherwise leave out. |
 | `HSN` | Only if printed on the item. |
-| `Default MRP` | The MRP **printed** on the item. Never use a handwritten MRP. Leave out if none is printed. |
+| `Default MRP` | The MRP **printed** on the item. If no MRP is printed, use the handwritten MRP. If both exist, always use the printed one. |
 | `Sale price` | Handwritten sale price |
 | `Purchase price` | Handwritten purchase price |
 | `Wholesale price` | Handwritten wholesale price |
