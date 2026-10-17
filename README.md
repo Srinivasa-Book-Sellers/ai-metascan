@@ -15,6 +15,7 @@ scanning\
   processed\      # Images already written to Excel
   needs_review\   # Images Copilot could not read with confidence, with a reason .txt
   records\        # Batch JSON files used to fill the template
+  labels\         # Generated label PDFs
 ```
 
 ## Setup
@@ -32,6 +33,16 @@ python -m pip install -r requirements.txt
 5. Import the Excel file into Vyapaar.
 
 The extraction rules and steps Copilot follows are in [`.github/skills/process-scanning/SKILL.md`](.github/skills/process-scanning/SKILL.md).
+
+## Labels
+
+`scripts\make_labels.py` makes a PDF of blank labels for a 2-across 38×25 mm label roll, with underlined fields (Details, MRP, Sale, Whsl, Qty, Pur, Stock) to fill in by hand. Ask Copilot to **"print labels"**, or run:
+
+```powershell
+python scripts\make_labels.py
+```
+
+The PDF is one page: one row of 2 labels. For more labels, set the number of copies when printing. A sample and preview are in [`resources/labels`](resources/labels). Printing notes are in [`.github/skills/print-labels/SKILL.md`](.github/skills/print-labels/SKILL.md).
 
 ## Template
 

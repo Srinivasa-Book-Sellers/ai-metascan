@@ -77,6 +77,20 @@ Prices and quantities are numbers. `Item code` is a string.
 | `Opening stock quantity` | Handwritten stock |
 | `Discount Type`, `Sale Discount` | Only if a sale discount is written |
 
+### Printed item labels
+
+Items may carry a printed label (from `print-labels`) instead of a handwritten paper. Its fields map as follows:
+
+| Label field | Template column |
+|---|---|
+| `Details` | Appended to `Item name*` |
+| `MRP` | `Default MRP` (the printed MRP on the item still wins) |
+| `Sale` | `Sale price` |
+| `Whsl` | `Wholesale price` |
+| `Qty` | `Minimum wholesale quantity` |
+| `Pur` | `Purchase price` |
+| `Stock` | `Opening stock quantity` |
+
 Always leave out: discount percentages on MRP, tax rate, inclusive of tax, units, minimum stock, and item location.
 
 ### Rupees and paise
