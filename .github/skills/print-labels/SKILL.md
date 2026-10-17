@@ -8,20 +8,19 @@ description: Generate printable blank item labels (2-across 38x25 mm roll) for w
 Run from the repository root:
 
 ```powershell
-python scripts\make_labels.py --labels <N>
+python scripts\make_labels.py
 ```
 
-- Each PDF page is one row of the roll: 2 labels of 38×25 mm side by side, with a 2 mm gap (change with `--gap`).
-- `--labels 10` makes a 5-page PDF (10 labels). Odd numbers round up to fill the row. Output goes to `C:\Users\DELL\Documents\scanning\labels\labels-<timestamp>.pdf` unless `--out` is given.
+- The PDF is one page: one row of the roll with 2 labels of 38×25 mm side by side and a 2 mm gap (change with `--gap`).
+- Output goes to `C:\Users\DELL\Documents\scanning\labels\labels-<timestamp>.pdf` unless `--out` is given.
 - Report the output file to the user.
-- A 10-label sample and preview are in `resources\labels\`.
+- A sample and preview are in `resources\labels\`.
 
 ## Printing
 
-- A label printer treats each PDF page as one row of labels and feeds the roll to the next row after each page. Printing a 5-page PDF once prints 10 labels.
 - In the label printer driver, set the paper size to the page size (78×25 mm with the default gap) and print at **100% / actual size**, with no fit-to-page scaling.
-- Use the driver's media/gap sensing (calibrate once) so each page starts at the top of a label row.
-- Print a 2-label PDF first to check alignment. If the labels are shifted sideways, regenerate with a different `--gap`.
+- For more labels, set the number of copies in the print dialog.
+- If the labels are shifted sideways, regenerate with a different `--gap`.
 
 ## Label fields
 

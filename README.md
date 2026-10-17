@@ -39,10 +39,10 @@ The extraction rules and steps Copilot follows are in [`.github/skills/process-s
 `scripts\make_labels.py` makes a PDF of blank labels for a 2-across 38×25 mm label roll, with underlined fields (Details, MRP, Sale, Whsl, Qty, Pur, Stock) to fill in by hand. Ask Copilot to **"print labels"**, or run:
 
 ```powershell
-python scripts\make_labels.py --labels 10
+python scripts\make_labels.py
 ```
 
-Each PDF page is one row of 2 labels; a label printer prints the pages one after another down the roll, so a 5-page PDF prints 10 labels. A 10-label sample and preview are in [`resources/labels`](resources/labels). Printing notes are in [`.github/skills/print-labels/SKILL.md`](.github/skills/print-labels/SKILL.md).
+The PDF is one page: one row of 2 labels. For more labels, set the number of copies when printing. A sample and preview are in [`resources/labels`](resources/labels). Printing notes are in [`.github/skills/print-labels/SKILL.md`](.github/skills/print-labels/SKILL.md).
 
 ## Template
 

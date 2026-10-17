@@ -8,10 +8,9 @@ Each label has underlined fields to fill in by hand:
     Pur   ________   Stock ________
 
 Usage (from the repository root):
-    python scripts\\make_labels.py [--labels N] [--gap MM] [--out FILE]
+    python scripts\\make_labels.py [--gap MM] [--out FILE]
 
-One PDF page is one row of the roll (2 labels), so --labels 10 makes 5 pages.
-Label printers feed one row per page, so printing the PDF prints all rows in order.
+The PDF is a single page: one row of the roll (2 labels).
 """
 
 import argparse
@@ -59,7 +58,7 @@ def label_ops(x0):
     return ops
 
 
-def build_pdf(rows, gap):
+def build_pdf(gap):
     page_w = 2 * LABEL_W + gap
     content = "\n".join(
         [f"{LINE_WIDTH} w 0 G 0 g"] + label_ops(0) + label_ops(LABEL_W + gap)
@@ -67,19 +66,12 @@ def build_pdf(rows, gap):
 
     objects = [
         b"<< /Type /Catalog /Pages 2 0 R >>",
-        None,  # pages, filled below
+        b"<< /Type /Pages /Kids [5 0 R] /Count 1 >>",
         b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
         b"<< /Length %d >>\nstream\n%s\nendstream" % (len(content), content),
+        f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {pt(page_w):.2f} {pt(LABEL_H):.2f}] "
+        f"/Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>".encode("ascii"),
     ]
-    page_ids = []
-    for _ in range(rows):
-        objects.append(
-            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {pt(page_w):.2f} {pt(LABEL_H):.2f}] "
-            f"/Resources << /Font << /F1 3 0 R >> >> /Contents 4 0 R >>".encode("ascii")
-        )
-        page_ids.append(len(objects))
-    kids = " ".join(f"{n} 0 R" for n in page_ids)
-    objects[1] = f"<< /Type /Pages /Kids [{kids}] /Count {rows} >>".encode("ascii")
 
     pdf = bytearray(b"%PDF-1.4\n")
     offsets = []
@@ -95,16 +87,14 @@ def build_pdf(rows, gap):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--labels", type=int, default=2, help="number of labels (rounded up to an even number)")
     parser.add_argument("--gap", type=float, default=2.0, help="gap between the 2 labels in mm")
     parser.add_argument("--out", type=Path, help="output PDF (default: scanning\\labels\\labels-<timestamp>.pdf)")
     args = parser.parse_args()
 
     out = args.out or LABELS_DIR / f"labels-{datetime.now():%Y%m%d-%H%M%S}.pdf"
     out.parent.mkdir(parents=True, exist_ok=True)
-    rows = (args.labels + 1) // 2
-    out.write_bytes(build_pdf(rows, args.gap))
-    print(f"Saved {rows * 2} labels ({rows} rows) to {out}")
+    out.write_bytes(build_pdf(args.gap))
+    print(f"Saved 2 labels to {out}")
 
 
 if __name__ == "__main__":
