@@ -38,3 +38,13 @@ The extraction rules and steps Copilot follows are in [`.github/skills/process-s
 `resources\Import Items Template.xlsx` is the Vyapaar import template; its headers must not change. The script fills these `Item Details` columns when available: `Item name*`, `Item code`, `Category`, `HSN`, `Default MRP`, `Sale price`, `Purchase price`, `Wholesale price`, `Minimum wholesale quantity`, `Discount Type`, `Sale Discount`, and `Opening stock quantity`. Tax, unit, and MRP discount percentage columns are left blank.
 
 Items without a barcode get an internal EAN-13 code starting with `200`, numbered after the highest such code in existing output files. These codes are for this shop only and are not registered GS1 barcodes.
+
+## Test case
+
+`tests\sample` holds 4 sample images (compressed to 1600px), the confirmed rows (`batch.json`), and the expected Excel output (`expected-output.xlsx`). The test runs the script on a temporary copy and checks the output matches:
+
+```powershell
+python -m unittest discover -s tests
+```
+
+To check extraction, ask Copilot to process the sample images and compare its rows with `batch.json`.
