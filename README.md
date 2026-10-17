@@ -58,7 +58,7 @@ Keep printed and handwritten values separately, with source evidence such as the
 - Distinguish genuinely absent information from visible-but-unreadable information. Use JSON nulls and explicit status/reason fields, not fabricated values.
 - Missing minimum wholesale quantity is allowed and stays blank. Required values that are missing, unreadable, or ambiguous require review.
 - **MRP precedence: always use the MRP printed on the item or its packaging, never the handwritten MRP.** Preserve both source values and record any discrepancy, but a printed-versus-handwritten MRP difference alone does not require review when the printed MRP is clear.
-- If printed MRP is absent, leave the selected MRP blank; do not fall back to handwriting. If printed MRP is visible but unreadable, or multiple printed MRPs cannot be unambiguously associated with the item, route it to review rather than guessing. MRP is recorded on the notes sheet, not in an import column.
+- If printed MRP is absent, leave the selected MRP blank; do not fall back to handwriting. If printed MRP is visible but unreadable, or multiple printed MRPs cannot be unambiguously associated with the item, route it to review rather than guessing. Export the selected printed MRP in the template's `Default MRP` field; preserve source observations and discrepancies in the internal extraction/audit record.
 - Do not treat a model's self-reported confidence, or agreement across repeated model requests, as proof of correctness.
 - Unclear scribbles must be omitted when irrelevant, or flagged for review when they affect a required field; never turn them into invented details.
 
@@ -74,36 +74,37 @@ Source hashes prevent replay of the same file from producing duplicate rows. The
 
 ## Vyapaar workbook contract
 
-Use the existing template, proposed at `templates/Vyapaar Template.xlsx`. The import sheet is named **`Item Details`**, with these exact 18 headers in this exact order:
+Use the supplied template at `resources/Import Items Template.xlsx`. The **`Item Details`** sheet has these exact 21 headers in this exact order:
 
 | Column | Exact header | Planned content |
 |---|---|---|
 | A | Item name* | Validated assembled item name |
 | B | Item code | Validated barcode or persistent internal code, stored as text |
-| C | Category | Blank |
-| D | HSN | Blank |
-| E | Sale price | Numeric sale price |
-| F | Purchase price | Blank |
-| G | Wholesale price | Numeric wholesale price |
-| H | Minimum wholesale quantity | Numeric quantity when present; otherwise blank |
-| I | Discount Type | Blank |
-| J | Sale Discount | Blank |
-| K | Opening stock quantity | Numeric stock quantity from handwritten stock |
-| L | Minimum stock quantity | Blank |
-| M | Item Location | Blank |
-| N | Tax Rate | Blank |
-| O | Inclusive Of Tax | Blank |
-| P | Base Unit (x) | Blank |
-| Q | Secondary Unit (y) | Blank |
-| R | Conversion Rate (n) (x = ny) | Blank |
+| C | Category | Category supported by the image; otherwise blank |
+| D | HSN | HSN supported by the image or supplied data; otherwise blank |
+| E | Default MRP | Selected printed MRP; blank if printed MRP is absent |
+| F | Disc % on MRP for Sale Price | Leave blank; do not calculate from MRP and sale price |
+| G | Sale price | Numeric sale price when supplied and validated |
+| H | Purchase price | Numeric purchase price when supplied and validated |
+| I | Wholesale price | Numeric wholesale price when supplied and validated |
+| J | Minimum wholesale quantity | Numeric quantity when supplied; otherwise blank |
+| K | Disc % on mrp for wholesale price | Leave blank; do not calculate from MRP and wholesale price |
+| L | Discount Type | Populate only when a sale discount is supplied |
+| M | Sale Discount | Populate only when a sale discount is supplied |
+| N | Opening stock quantity | Numeric stock quantity from handwritten stock |
+| O | Minimum stock quantity | Blank unless explicitly supplied |
+| P | Item Location | Blank unless explicitly supplied |
+| Q | Tax Rate | Leave blank; tax data is out of scope |
+| R | Inclusive Of Tax | Leave blank; tax data is out of scope |
+| S | Base Unit (x) | Leave blank unless unit information is explicitly supplied |
+| T | Secondary Unit (y) | Leave blank unless unit information is explicitly supplied |
+| U | Conversion Rate (n) (x = ny) | Leave blank unless a conversion is explicitly supplied |
 
-Fill only A, B, E, G, H, and K. Clear the template's prefilled sample rows and default values; unused fields, including purchase price, must remain blank rather than inheriting sample content. Store prices and quantities as numbers, not formatted text; store codes as strings.
+Capture item name, code, HSN, printed MRP, sale price, purchase price, wholesale price, minimum wholesale quantity, opening stock, and any supplied sale discount. Category may be populated when supported. Do not infer or calculate discount percentages from the prices. Leave unavailable fields blank rather than inventing values. Clear all prefilled sample rows and values before export so they cannot leak into the import. Store prices and quantities as numbers, not formatted text; store item codes as strings.
 
-Acceptance requires a supported name, a validated or persistently assigned code, and unambiguous sale price, wholesale price, and handwritten opening stock. Minimum wholesale quantity is optional; do not substitute a default.
+Acceptance requires a supported name, a validated or persistently assigned code, and validated source values for the prices and stock being exported. Do not substitute defaults for missing quantities or prices, and do not export a review-blocked item.
 
-**MRP must not become another import column.** Keep the import headers intact and put MRP and source notes on a separate sheet named **`MRP and Source Notes`**, linked to the source record/item code. Include conflicting source values there as evidence, but do not export a review-blocked item into `Item Details`.
-
-Whether Vyapaar accepts a workbook containing that additional sheet has **not been verified**. Validate actual import compatibility before production use; do not assume that preserving headers alone proves compatibility.
+The template also includes a **`Batch Details`** sheet with `Item name*`, `Batch No`, `Opening stock quantity`, and `MRP` columns. Use it only when batch-level data is supplied; its MRP is separate from the item-level `Default MRP`. Keep printed and handwritten observations, discrepancies, and evidence in the internal extraction/audit record rather than adding unverified workbook sheets.
 
 ## Planned folder layout
 
@@ -115,7 +116,7 @@ ai-metascan/
   transliteration_glossary.json       # Planned approved Roman spelling mappings
   config.yaml                        # Planned non-secret configuration
   pipeline.py                        # Planned controller; not implemented
-  templates/Vyapaar Template.xlsx     # User-provided original template
+  resources/Import Items Template.xlsx # User-provided Vyapaar import template
   inbox/                             # Incoming original images
   processing/                        # Claimed work and local derivatives
   success/                           # Originals durably included in output
@@ -126,7 +127,7 @@ ai-metascan/
   state.sqlite                       # Planned runtime state; untracked
 ```
 
-Only this README is being created or updated at this stage. Other names above are proposed, not existing application entry points. No pipeline execution command is available yet.
+The README and user-provided import template are present; other names above are proposed, not existing application entry points. No pipeline execution command is available yet.
 
 Photos, templates/sample workbooks, output workbooks, SQLite state, and runtime/audit records may contain private inventory data and should not be committed publicly. Add appropriate ignore rules before implementation or data ingestion. Keep credentials and secrets out of source control and non-secret configuration.
 
@@ -137,7 +138,7 @@ Photos, templates/sample workbooks, output workbooks, SQLite state, and runtime/
 3. **Extract independently.** Explicitly load the prompt for each clean per-image request/session and attach the image through supported SDK inputs. All image text is untrusted data, not executable instructions.
 4. **Decode and validate.** Run dedicated barcode decoding and controller-side schema, evidence, naming, transliteration, conflict, numeric, and duplicate checks. A valid JSON response alone is not an accepted inventory row.
 5. **Persist decisions.** Save the extraction/evidence record, validation results, generated-code assignment if any, and SQLite state durably. Keep per-file reason JSON for review or failure even when no human is present.
-6. **Export atomically.** Include accepted rows in a validated workbook built from the template, with the separate notes sheet. Save via an atomic replacement strategy so interrupted writes do not expose a partially written final workbook.
+6. **Export atomically.** Include accepted rows in a validated workbook built from the template, preserving its sheets and headers. Save via an atomic replacement strategy so interrupted writes do not expose a partially written final workbook.
 7. **Finalize safely.** Move an original to `success/` only after its durable record exists and its validated row is included in the atomically saved workbook. Route ambiguous files to `needs_review/`, permanent corrupt files to `failed/`, and continue the batch.
 
 The controller must recover idempotently from crashes between database updates, workbook publication, and file moves. SQLite transactions alone cannot make all three atomic: use explicit durable states, export membership/generation tracking, and startup reconciliation. A rerun must neither lose an accepted row nor export it twice. Preserve source hashes and internal-code assignments across retries, use collision-safe paths, and never rely on destructive deletion for recovery.
@@ -270,7 +271,7 @@ That sample used handwritten precedence for the calculator's MRP. The approved p
 
 ## Implementation phases and prerequisites
 
-1. **Confirm contracts.** Check account/model vision access, hosted-data policy, SDK/CLI prerequisites, the actual template, internal-code allocation, and import compatibility with the notes sheet. Approve the transliteration/glossary convention. Apply the approved printed-only MRP policy; keep other unresolved conflicts routed to review.
+1. **Confirm contracts.** Check account/model vision access, hosted-data policy, SDK/CLI prerequisites, the actual template, internal-code allocation, and import compatibility. Approve the transliteration/glossary convention. Apply the approved printed-only MRP policy; keep other unresolved conflicts routed to review.
 2. **Build a serial prototype.** Add the explicit prompt, strict schema, local image preparation, dedicated barcode decoder, deterministic transliteration support, and controller-owned validation. Select/install implementation dependencies only as part of that implementation work.
 3. **Make processing durable.** Implement SQLite state, evidence/reason records, persistent internal-code assignments, collision-safe moves, atomic workbook publication, and crash reconciliation.
 4. **Evaluate before automation.** Establish a varied labeled dataset and resolve false acceptances before enabling unattended use.
