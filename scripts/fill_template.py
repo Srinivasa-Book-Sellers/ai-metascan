@@ -5,7 +5,7 @@ Usage: python scripts/fill_template.py <batch.json>
 The batch file is a list of rows. Each row has an "image" (file name in the input
 folder) and values keyed by the exact template headers, for example
 {"image": "IMG_1.jpg", "Item name*": "...", "Sale price": 35}.
-Rows without an "Item code" get a new internal EAN-13 code starting with 200.
+Rows without an "Item code" get a new internal 10-digit code starting with 9.
 """
 
 import io
@@ -23,7 +23,9 @@ REPO = Path(__file__).resolve().parent.parent
 TEMPLATE = REPO / "resources" / "Import Items Template.xlsx"
 SCANNING = Path(r"C:\Users\DELL\Documents\scanning")
 COLUMNS = 21  # A:U; column AE holds the category dropdown list and is kept.
-CODE_PREFIX = "200"
+# Codes starting with 2 are read as weighing-scale barcodes (weight/price), so avoid them.
+CODE_PREFIX = "9"
+CODE_LENGTH = 10
 
 
 def load_template():
@@ -41,11 +43,6 @@ def load_template():
     return load_workbook(buffer)
 
 
-def ean13(body):
-    total = sum(int(digit) * (3 if index % 2 else 1) for index, digit in enumerate(body))
-    return body + str((10 - total % 10) % 10)
-
-
 def last_internal_number():
     highest = 0
     for path in (SCANNING / "output").glob("*.xlsx"):
@@ -53,8 +50,8 @@ def last_internal_number():
         rows = workbook["Item Details"].iter_rows(min_row=2, min_col=2, max_col=2, values_only=True)
         for (code,) in rows:
             code = str(code or "")
-            if len(code) == 13 and code.isdigit() and code.startswith(CODE_PREFIX):
-                highest = max(highest, int(code[3:12]))
+            if len(code) == CODE_LENGTH and code.isdigit() and code.startswith(CODE_PREFIX):
+                highest = max(highest, int(code[len(CODE_PREFIX):]))
         workbook.close()
     return highest
 
@@ -87,7 +84,7 @@ def main():
     next_number = last_internal_number() + 1
     for row_index, row in enumerate(rows, 2):
         if not row.get("Item code"):
-            row["Item code"] = ean13(f"{CODE_PREFIX}{next_number:09d}")
+            row["Item code"] = f"{CODE_PREFIX}{next_number:0{CODE_LENGTH - len(CODE_PREFIX)}d}"
             next_number += 1
         for column, header in enumerate(headers, 1):
             value = row.get(header)
