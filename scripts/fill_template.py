@@ -76,9 +76,12 @@ def main():
         if (SCANNING / "processed" / row["image"]).exists():
             sys.exit(f"Row {number}: image already exists in processed: {row['image']}")
 
+    # Remove the template's sample rows and notes, including their borders and colours.
     for row_index in range(2, sheet.max_row + 1):
         for column in range(1, COLUMNS + 1):
-            sheet.cell(row_index, column).value = None
+            cell = sheet.cell(row_index, column)
+            cell.value = None
+            cell.style = "Normal"
     workbook["Batch Details"].delete_rows(2, workbook["Batch Details"].max_row)
 
     next_number = last_internal_number() + 1
